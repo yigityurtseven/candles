@@ -1,0 +1,849 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Candle Control V4 - Social Dynamics</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0b0b0b;
+      color: #eee;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 30px 0 10px;
+      font-weight: 600;
+      color: #ff6e00;
+    }
+
+    .container {
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #181818;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      border: 1px solid #222;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .strip-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: #ffaa00;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666;
+      margin: 8px 0 8px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .row label {
+      font-size: 13px;
+      color: #888;
+      width: 80px;
+    }
+
+    .row input[type="range"] {
+      flex: 1;
+      accent-color: #ff6e00;
+    }
+
+    .row .val {
+      font-size: 13px;
+      width: 30px;
+      text-align: right;
+    }
+
+    .t-slider-container {
+      margin-bottom: 12px;
+    }
+
+    .t-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 10px;
+      border-radius: 5px;
+      background: linear-gradient(to right,
+          #333 0%,
+          #333 24.5%,
+          #ff6e00 24.5%,
+          #ff6e00 25.5%,
+          #333 25.5%,
+          #333 49.5%,
+          #ff6e00 49.5%,
+          #ff6e00 50.5%,
+          #333 50.5%,
+          #333 74.5%,
+          #ff6e00 74.5%,
+          #ff6e00 75.5%,
+          #333 75.5%,
+          #333 100%);
+      outline: none;
+    }
+
+    .t-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #ff6e00;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .tick-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #888;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+
+    .tick-labels span {
+      flex: 1;
+      text-align: center;
+    }
+
+    .modes {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .modes button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #222;
+      color: #888;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+
+    .modes button.active {
+      background: #ff6e00;
+      color: #000;
+      border-color: #ff6e00;
+      font-weight: 600;
+    }
+
+    .swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+
+    .swatch.active {
+      border-color: #fff;
+      box-shadow: 0 0 10px #ff6e00;
+    }
+
+    .sw-1 {
+      background: #ff820f;
+    }
+
+    .sw-2 {
+      background: linear-gradient(135deg, #ff820f, #ff640a);
+    }
+
+    .sw-3 {
+      background: linear-gradient(135deg, #ff640a, #ff5005);
+    }
+
+    .sw-4 {
+      background: linear-gradient(135deg, #ff5005, #ff3c00);
+    }
+
+    .sw-5 {
+      background: linear-gradient(135deg, #ff3c00, #ff2800);
+    }
+
+    .sw-6 {
+      background: linear-gradient(135deg, #ff2800, #ff1900);
+    }
+
+    .sw-7 {
+      background: linear-gradient(135deg, #ff1900, #ff0f00);
+    }
+
+    .custom-grad-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .color-picker {
+      -webkit-appearance: none;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 0;
+      background: none;
+    }
+
+    .color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    .color-picker::-webkit-color-swatch {
+      border: 1px solid #444;
+      border-radius: 6px;
+    }
+
+    .btn-apply {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #ff6e00;
+      background: transparent;
+      color: #ff6e00;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .btn-apply:hover,
+    .btn-apply.active {
+      background: #ff6e00;
+      color: #000;
+    }
+
+    .btn-tap {
+      background: #ff3333 !important;
+      color: white !important;
+      border-color: #ff3333 !important;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-tap:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card master-card">
+      <div class="section-label">Dynamics Timing Config (Seconds)</div>
+      <div class="row" style="margin-bottom: 10px; justify-content: space-between;">
+        <div style="display: flex; flex-direction: row; gap: 10px;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="width:auto; font-size:11px;">State Up</label>
+            <input type="number" id="timeUp" value="30"
+              style="width:60px; background:#222; color:#eee; border:1px solid #333; border-radius:4px; padding:4px;">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="width:auto; font-size:11px;">Cooldown</label>
+            <input type="number" id="timeCool" value="10"
+              style="width:60px; background:#222; color:#eee; border:1px solid #333; border-radius:4px; padding:4px;">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="width:auto; font-size:11px;">State Down</label>
+            <input type="number" id="timeDown" value="30"
+              style="width:60px; background:#222; color:#eee; border:1px solid #333; border-radius:4px; padding:4px;">
+          </div>
+        </div>
+        <div>
+          <div class="section-label">Atmosphere</div>
+          <div class="modes" id="global-states" style="margin-bottom: 15px">
+            <button onclick="setGlobalState(1, this)">Ember (Quiet)</button>
+            <button onclick="setGlobalState(2, this)">Glow (Social Flow)</button>
+            <button onclick="setGlobalState(3, this)">Spark (Excitement)</button>
+            <button onclick="setGlobalState(4, this)">Turbulent (Tension)</button>
+            <button onclick="setGlobalState(5, this)">Extinguished</button>
+          </div>
+        </div>
+        <div>
+          <div class="section-label">Simulate Group Taps (Sync)</div>
+          <div class="modes" style="margin-bottom: 15px; display: flex; gap: 8px;">
+            <button onclick="sendGroupTap('1100')" class="btn-apply">2 People (Candles 1 & 2)</button>
+            <button onclick="sendGroupTap('1010')" class="btn-apply">2 People (Candles 1 & 3)</button>
+            <button onclick="sendGroupTap('1110')" class="btn-apply">3 People (Candles 1, 2, 3)</button>
+            <button onclick="sendGroupTap('1111')" class="btn-apply">4 People (All Candles)</button>
+          </div>
+        </div>
+      </div>
+      <div class="strip-title" style="color: #ff6e00">Global Table State</div>
+
+      <div class="row">
+        <label>Master Brg</label>
+        <input type="range" min="0" max="255" value="200" id="master-range" oninput="onMaster(this)" />
+        <span class="val" id="master-val">200</span>
+      </div>
+    </div>
+
+    <div id="strips-grid"></div>
+  </div>
+
+  <script>
+
+    let tapSequenceActive = false; // Prevents overlapping tap sequences
+
+    // Helper: Captures the current active button and brightness for a strip
+    function getStripState(strip) {
+      let b = document.getElementById(`b${strip}`).value;
+
+      let sActive = document.querySelector(`#s${strip} button.active`);
+      if (sActive) {
+        let index = Array.from(sActive.parentNode.children).indexOf(sActive) + 1;
+        return { b: b, type: 's', val: index, el: sActive };
+      }
+
+      let tActive = document.querySelector(`#tState${strip} button.active`);
+      if (tActive) {
+        let index = Array.from(tActive.parentNode.children).indexOf(tActive) + 1;
+        return { b: b, type: 'y', val: index, el: tActive };
+      }
+
+      let cActive = document.querySelector(`#c${strip} .active`);
+      if (cActive) {
+        let index = Array.from(cActive.parentNode.children).indexOf(cActive);
+        return { b: b, type: 'c', val: index, el: cActive };
+      }
+
+      return { b: b, type: null };
+    }
+
+    // Helper: Puts a strip exactly back to how it was
+    function restoreStripState(strip, state) {
+      if (!state || !state.type) return;
+
+      // Restore Brightness
+      document.getElementById(`b${strip}`).value = state.b;
+      document.getElementById(`b${strip}-val`).textContent = state.b;
+      document.getElementById(`tSlider${strip}`).value = state.b;
+      sendThrottledB(strip, state.b);
+
+      // Restore Mode (pass "true" to setTalkingState to prevent it overriding our brightness)
+      if (state.type === 's') setState(strip, state.val, state.el);
+      else if (state.type === 'y') setTalkingState(strip, state.val, state.el, true);
+      else if (state.type === 'c') setColor(strip, state.val, state.el);
+    }
+
+    const activeTimers = { 1: null, 2: null, 3: null, 4: null };
+    const uiIntervals = { 1: null, 2: null, 3: null, 4: null };
+
+    function clearAutomation(strip) {
+      clearInterval(activeTimers[strip]);
+      clearTimeout(activeTimers[strip]);
+      clearInterval(uiIntervals[strip]);
+      let display = document.getElementById(`timerDisplay${strip}`);
+      if (display) display.innerText = "";
+    }
+
+    function setSliderAutomated(strip, val) {
+      let slider = document.getElementById(`tSlider${strip}`);
+      val = Math.max(0, Math.min(255, val)); // Clamp between 0 and 255
+      slider.value = val;
+      onTalkingSlider(strip, slider);
+    }
+
+    function startTalking(strip) {
+      clearAutomation(strip);
+      let secsPerState = parseFloat(document.getElementById('timeUp').value) || 30;
+      let msPerStep = (secsPerState * 1000) / 64; // 64 slider units per state
+      let startTime = Date.now();
+
+      activeTimers[strip] = setInterval(() => {
+        let slider = document.getElementById(`tSlider${strip}`);
+        let currentVal = parseInt(slider.value);
+        if (currentVal < 255) {
+          setSliderAutomated(strip, currentVal + 1);
+        } else {
+          clearAutomation(strip);
+          document.getElementById(`timerDisplay${strip}`).innerText = "MAX";
+        }
+      }, msPerStep);
+
+      uiIntervals[strip] = setInterval(() => {
+        let elapsed = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById(`timerDisplay${strip}`).innerText = `🗣️ ${elapsed}s`;
+      }, 1000);
+    }
+
+    function stopTalking(strip) {
+      clearAutomation(strip);
+      let cooldownSecs = parseFloat(document.getElementById('timeCool').value) || 10;
+      let secsPerStateDown = parseFloat(document.getElementById('timeDown').value) || 30;
+      let msPerStep = (secsPerStateDown * 1000) / 64;
+      let startTime = Date.now();
+
+      // Start the Cooldown UI Phase
+      uiIntervals[strip] = setInterval(() => {
+        let left = Math.ceil((cooldownSecs * 1000 - (Date.now() - startTime)) / 1000);
+        if (left > 0) {
+          document.getElementById(`timerDisplay${strip}`).innerText = `⏳ ${left}s`;
+        }
+      }, 1000);
+
+      // Trigger the fade down after cooldown
+      activeTimers[strip] = setTimeout(() => {
+        clearInterval(uiIntervals[strip]);
+        document.getElementById(`timerDisplay${strip}`).innerText = `📉 Fading...`;
+
+        activeTimers[strip] = setInterval(() => {
+          let slider = document.getElementById(`tSlider${strip}`);
+          let currentVal = parseInt(slider.value);
+          if (currentVal > 0) {
+            setSliderAutomated(strip, currentVal - 1);
+          } else {
+            clearAutomation(strip);
+            document.getElementById(`timerDisplay${strip}`).innerText = "MIN";
+          }
+        }, msPerStep);
+      }, cooldownSecs * 1000);
+    }
+
+    function stayHere(strip) {
+      clearAutomation(strip);
+      document.getElementById(`timerDisplay${strip}`).innerText = `⏸️ Paused`;
+    }
+    function sendCmd(cmd) {
+      fetch("/cmd?val=" + cmd);
+    }
+
+    let bTimeouts = {};
+    let lastBSend = {};
+
+    function sendThrottledB(strip, val) {
+      let now = Date.now();
+      if (!lastBSend[strip] || now - lastBSend[strip] > 50) {
+        sendCmd(`b${strip}${val}`);
+        lastBSend[strip] = now;
+      } else {
+        clearTimeout(bTimeouts[strip]);
+        bTimeouts[strip] = setTimeout(() => {
+          sendCmd(`b${strip}${val}`);
+          lastBSend[strip] = Date.now();
+        }, 50);
+      }
+    }
+
+    function onMaster(el) {
+      document.getElementById("master-val").textContent = el.value;
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`b${i}`).value = el.value;
+        document.getElementById(`b${i}-val`).textContent = el.value;
+        sendThrottledB(i, el.value);
+      }
+    }
+
+    function onB(strip, el) {
+      let val = parseInt(el.value);
+      document.getElementById(`b${strip}-val`).textContent = val;
+      sendThrottledB(strip, val);
+
+      let tSlider = document.getElementById(`tSlider${strip}`);
+      let isTalkingActive =
+        document
+          .getElementById(`tState${strip}`)
+          .querySelectorAll("button.active").length > 0;
+
+      if (isTalkingActive) {
+        tSlider.value = val;
+        let state = 1;
+        if (val >= 192) state = 4;
+        else if (val >= 128) state = 3;
+        else if (val >= 64) state = 2;
+
+        if (tSlider.dataset.state != state) {
+          tSlider.dataset.state = state;
+          sendCmd(`y${strip}${state}`);
+          document
+            .getElementById(`tState${strip}`)
+            .querySelectorAll("button")
+            .forEach((b) => b.classList.remove("active"));
+          let stateBtns = document
+            .getElementById(`tState${strip}`)
+            .querySelectorAll("button");
+          if (stateBtns[state - 1])
+            stateBtns[state - 1].classList.add("active");
+        }
+      }
+    }
+
+    function onTalkingSlider(strip, el) {
+      let val = parseInt(el.value);
+
+      sendThrottledB(strip, val);
+      document.getElementById(`b${strip}`).value = val;
+      document.getElementById(`b${strip}-val`).textContent = val;
+
+      let state = 1;
+      if (val >= 192) state = 4;
+      else if (val >= 128) state = 3;
+      else if (val >= 64) state = 2;
+
+      if (el.dataset.state != state) {
+        el.dataset.state = state;
+        setTalkingState(strip, state, null, true);
+      }
+    }
+
+    function setTalkingState(strip, val, btn, fromSlider = false) {
+      sendCmd(`y${strip}${val}`);
+
+      if (!fromSlider) {
+        let slider = document.getElementById(`tSlider${strip}`);
+        let newBrt = 32;
+        if (val === 1) newBrt = 32;
+        if (val === 2) newBrt = 96;
+        if (val === 3) newBrt = 160;
+        if (val === 4) newBrt = 224;
+
+        slider.value = newBrt;
+        slider.dataset.state = val;
+
+        sendCmd(`b${strip}${newBrt}`);
+        document.getElementById(`b${strip}`).value = newBrt;
+        document.getElementById(`b${strip}-val`).textContent = newBrt;
+      }
+
+      document
+        .getElementById(`tState${strip}`)
+        .querySelectorAll("button")
+        .forEach((b) => b.classList.remove("active"));
+      document
+        .getElementById(`s${strip}`)
+        .querySelectorAll("button")
+        .forEach((b) => b.classList.remove("active"));
+      document
+        .getElementById(`c${strip}`)
+        .querySelectorAll(".swatch, button")
+        .forEach((s) => s.classList.remove("active"));
+
+      document.getElementById(`cgBtn${strip}`)?.classList.remove("active");
+
+      if (btn) {
+        btn.classList.add("active");
+      } else {
+        let btns = document
+          .getElementById(`tState${strip}`)
+          .querySelectorAll("button");
+        if (btns[val - 1]) btns[val - 1].classList.add("active");
+      }
+    }
+
+    function setColor(strip, val, btn) {
+      sendCmd(`c${strip}${val}`);
+      document
+        .getElementById(`c${strip}`)
+        .querySelectorAll(".swatch, button")
+        .forEach((s) => s.classList.remove("active"));
+
+      document.getElementById(`cgBtn${strip}`)?.classList.remove("active");
+
+      document
+        .getElementById(`s${strip}`)
+        .querySelectorAll("button")
+        .forEach((s) => s.classList.remove("active"));
+      document
+        .getElementById(`tState${strip}`)
+        .querySelectorAll("button")
+        .forEach((b) => b.classList.remove("active"));
+
+      if (btn) btn.classList.add("active");
+    }
+
+    function setCustomGradient(strip) {
+      let hexA = document.getElementById(`cgA${strip}`).value.substring(1);
+      let hexB = document.getElementById(`cgB${strip}`).value.substring(1);
+      sendCmd(`k${strip}${hexA}${hexB}`);
+      document
+        .getElementById(`c${strip}`)
+        .querySelectorAll(".swatch, button")
+        .forEach((s) => s.classList.remove("active"));
+      document
+        .getElementById(`s${strip}`)
+        .querySelectorAll("button")
+        .forEach((s) => s.classList.remove("active"));
+      document
+        .getElementById(`tState${strip}`)
+        .querySelectorAll("button")
+        .forEach((b) => b.classList.remove("active"));
+      document.getElementById(`cgBtn${strip}`).classList.add("active");
+    }
+
+    function setEffect(strip, val, btn) {
+      sendCmd(`e${strip}${val}`);
+      document
+        .getElementById(`e${strip}`)
+        .querySelectorAll("button")
+        .forEach((s) => s.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    function setState(strip, stateVal, btn) {
+      sendCmd(`x${strip}${stateVal}`);
+      document
+        .getElementById(`s${strip}`)
+        .querySelectorAll("button")
+        .forEach((b) => b.classList.remove("active"));
+      document
+        .getElementById(`c${strip}`)
+        .querySelectorAll(".swatch, button")
+        .forEach((s) => s.classList.remove("active"));
+
+      document.getElementById(`cgBtn${strip}`)?.classList.remove("active");
+
+      document
+        .getElementById(`tState${strip}`)
+        .querySelectorAll("button")
+        .forEach((b) => b.classList.remove("active"));
+
+      if (btn) btn.classList.add("active");
+    }
+
+    function setGlobalState(stateVal, btn) {
+      sendCmd(`g${stateVal}`);
+      document
+        .getElementById("global-states")
+        .querySelectorAll("button")
+        .forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      for (let i = 1; i <= 4; i++) {
+        document
+          .getElementById(`s${i}`)
+          .querySelectorAll("button")
+          .forEach((b) => b.classList.remove("active"));
+        document
+          .getElementById(`c${i}`)
+          .querySelectorAll(".swatch, button")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById(`cgBtn${i}`).classList.remove("active");
+        document
+          .getElementById(`tState${i}`)
+          .querySelectorAll("button")
+          .forEach((b) => b.classList.remove("active"));
+        document
+          .getElementById(`s${i}`)
+          .children[stateVal - 1].classList.add("active");
+      }
+    }
+
+    function sendTap(strip) {
+      // 1. Grab the dynamic duration (default to 3 if empty/invalid)
+      let durationSec = parseInt(document.getElementById(`tapDuration${strip}`).value) || 3;
+      let durationMs = durationSec * 1000;
+
+      // 2. Send command with BOTH strip ID and duration (e.g., "t15" for strip 1, 5 sec)
+      sendCmd(`t${strip}${durationSec}`);
+
+      // 3. Revert to Talking Normal state after the dynamic duration
+      setTimeout(() => {
+        setTalkingState(strip, 3);
+      }, durationMs);
+    }
+
+    function sendTap2(strip) {
+      if (tapSequenceActive) return;
+      tapSequenceActive = true;
+
+      // 1. Grab the dynamic duration (default to 3 if empty/invalid)
+      let durationSec = parseInt(document.getElementById(`tapDuration${strip}`).value) || 3;
+      let durationMs = durationSec * 1000;
+
+      let savedStates = {};
+
+      // 2. Save and dim others
+      for (let i = 1; i <= 4; i++) {
+        if (typeof clearAutomation === 'function') clearAutomation(i);
+        if (i !== strip) {
+          savedStates[i] = getStripState(i);
+          setTalkingState(i, 1);
+          sendThrottledB(i, 25); // UNIFIED: Dropped to 25 to match Tap 1
+        }
+      }
+
+      // 3. Tapped strip goes to Spark
+      setState(strip, 3);
+
+      // 4. Revert after dynamic duration
+      setTimeout(() => {
+        for (let i = 1; i <= 4; i++) {
+          if (i !== strip && savedStates[i]) {
+            restoreStripState(i, savedStates[i]);
+          }
+        }
+        setTalkingState(strip, 3); // Tapped goes to Talking Normal
+        tapSequenceActive = false;
+      }, durationMs); // Uses the dynamic variable instead of 3000
+    }
+
+    //Tap 3 (Hard Blink focus)
+    function sendTap3(strip) {
+      if (tapSequenceActive) return;
+      tapSequenceActive = true;
+
+      // 1. Grab the dynamic duration
+      let durationSec = parseInt(document.getElementById(`tapDuration${strip}`).value) || 3;
+      let durationMs = durationSec * 1000;
+
+      let savedStates = {};
+
+      for (let i = 1; i <= 4; i++) {
+        if (typeof clearAutomation === 'function') clearAutomation(i);
+        if (i !== strip) {
+          savedStates[i] = getStripState(i);
+          setTalkingState(i, 1);
+          sendThrottledB(i, 25); // UNIFIED: Dropped to 25 to match Tap 1
+        }
+      }
+
+      // Start aggressive blink via JS toggle
+      let blinkState = false;
+      let blinker = setInterval(() => {
+        blinkState = !blinkState;
+        sendThrottledB(strip, blinkState ? 255 : 0);
+      }, 250); // Toggles every 250ms
+
+      setTimeout(() => {
+        clearInterval(blinker); // Stop blinking
+        for (let i = 1; i <= 4; i++) {
+          if (i !== strip && savedStates[i]) {
+            restoreStripState(i, savedStates[i]);
+          }
+        }
+        setTalkingState(strip, 3);
+        tapSequenceActive = false;
+      }, durationMs); // Uses the dynamic variable instead of 3000
+    }
+
+    function shareFlame(from, to) {
+      sendCmd(`s${from}${to}`);
+      location.reload();
+    }
+
+    const grid = document.getElementById("strips-grid");
+    let html = '<div class="grid">';
+    for (let i = 1; i <= 4; i++) {
+      html += `
+            <div class="card">
+                <div class="strip-title">Strip ${i} 
+                  <div style="display:flex; gap:6px; align-items:center;">
+                      <button class="btn-tap" onclick="sendTap(${i})">Tap 1</button>
+                      <button class="btn-tap" style="background:#ff8800 !important; border-color:#ff8800 !important;" onclick="sendTap2(${i})">Tap 2</button>
+                      <button class="btn-tap" style="background:#d900ff !important; border-color:#d900ff !important;" onclick="sendTap3(${i})">Tap 3</button>
+                      <input type="number" id="tapDuration${i}" value="3" min="1" max="30" style="width:40px; background:#222; color:#eee; border:1px solid #333; border-radius:4px; padding:4px; font-size:11px;" title="Duration (sec)">
+                      <span style="font-size:10px; color:#888;">sec</span>
+                  </div>
+              </div>
+                <div class="row">
+                    <input type="range" min="0" max="255" value="200" id="b${i}" oninput="onB(${i}, this)">
+                    <span class="val" id="b${i}-val">200</span>
+                </div>
+                
+                <div class="section-label">Social State</div>
+                <div class="modes" id="s${i}">
+                    <button onclick="setState(${i}, 1, this)">Ember</button>
+                    <button onclick="setState(${i}, 2, this)">Glow</button>
+                    <button onclick="setState(${i}, 3, this)">Spark</button>
+                    <button onclick="setState(${i}, 4, this)">Turbulent</button>
+                    <button onclick="setState(${i}, 5, this)">Exting</button>
+                </div>
+
+                <div class="section-label">Talking State Slider</div>
+                <div class="t-slider-container">
+                    <input type="range" min="0" max="255" value="32" class="t-slider" id="tSlider${i}" oninput="onTalkingSlider(${i}, this)" data-state="1">
+                    <div class="tick-labels">
+                        <span>None</span><span>Less</span><span>Norm</span><span>Much</span>
+                    </div>
+                </div>
+
+                <div class="section-label">Talking Dynamics (Auto)</div>
+                <div class="modes" style="margin-bottom: 15px; display: flex; align-items: center; gap: 6px;">
+                    <button onclick="startTalking(${i})" style="border-color:#4CAF50; color:#4CAF50;">🗣️ Talking</button>
+                    <button onclick="stopTalking(${i})" style="border-color:#FF9800; color:#FF9800;">🛑 Stopped</button>
+                    <button onclick="stayHere(${i})" style="border-color:#2196F3; color:#2196F3;">⏸️ Stay</button>
+                    <span id="timerDisplay${i}" style="font-size: 11px; color:#ff6e00; font-weight:bold; min-width:50px; text-align:right;"></span>
+                </div>
+
+                <div class="modes" id="tState${i}">
+                    <button onclick="setTalkingState(${i}, 1, this)">No Talking</button>
+                    <button onclick="setTalkingState(${i}, 2, this)">Talking Less</button>
+                    <button onclick="setTalkingState(${i}, 3, this)">Talking Normal</button>
+                    <button onclick="setTalkingState(${i}, 4, this)">Talking Too Much</button>
+                </div>
+                
+
+                <div class="section-label">Manual Presets</div>
+                <div class="modes" id="c${i}">
+                    <div class="swatch sw-1 active" onclick="setColor(${i},0,this)"></div>
+                    <div class="swatch sw-2" onclick="setColor(${i},1,this)"></div>
+                    <div class="swatch sw-3" onclick="setColor(${i},2,this)"></div>
+                    <div class="swatch sw-4" onclick="setColor(${i},3,this)"></div>
+                    <div class="swatch sw-5" onclick="setColor(${i},4,this)"></div>
+                    <div class="swatch sw-6" onclick="setColor(${i},5,this)"></div>
+                    <div class="swatch sw-7" onclick="setColor(${i},6,this)"></div>
+                </div>
+
+                <div class="section-label">Effect</div>
+                <div class="modes" id="e${i}">
+                    <button onclick="setEffect(${i},0,this)">Static</button>
+                    <button class="active" onclick="setEffect(${i},1,this)">Flicker</button>
+                </div>
+
+                <div class="section-label">Share</div>
+                <div class="modes">
+                    ${[1, 2, 3, 4]
+          .filter((n) => n !== i)
+          .map(
+            (n) =>
+              `<button style="font-size:9px" onclick="shareFlame(${i},${n})">Copy to ${n}</button>`,
+          )
+          .join("")}
+                </div>
+            </div>`;
+    }
+    grid.innerHTML = html + "</div>";
+
+    let lendState = { 1: null, 2: null, 3: null, 4: null };
+
+    function sendGroupTap(mask) {
+      sendCmd(`z${mask}`);
+    }
+  </script>
+</body>
+
+</html>

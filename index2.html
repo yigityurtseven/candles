@@ -1,0 +1,289 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Candle Control Flow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0b0b0b;
+      color: #eee;
+      font-family: -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #ff6e00;
+      margin-bottom: 20px;
+      font-size: 26px;
+    }
+
+    .control-panel {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .card {
+      background: #151515;
+      border: 1px solid #333;
+      border-radius: 14px;
+      padding: 20px;
+      width: 100%;
+    }
+
+    .card h2 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #aaa;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .btn-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-state {
+      background: #222;
+      color: #888;
+      border: 2px solid #333;
+      width: 100%;
+      padding: 14px 0;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-state:active {
+      transform: scale(0.95);
+    }
+
+    /* Shared State Colors */
+    .state-1.active {
+      background: #444000;
+      color: #ffea00;
+      border-color: #ffea00;
+      box-shadow: 0 0 15px rgba(255, 234, 0, 0.3);
+    }
+
+    .state-2.active {
+      background: #4a2f00;
+      color: #ff9900;
+      border-color: #ff9900;
+      box-shadow: 0 0 15px rgba(255, 153, 0, 0.4);
+    }
+
+    .state-3.active {
+      background: #4a1f00;
+      color: #ff5500;
+      border-color: #ff5500;
+      box-shadow: 0 0 15px rgba(255, 85, 0, 0.4);
+    }
+
+    .state-4.active {
+      background: #440000;
+      color: #ff3333;
+      border-color: #ff3333;
+      box-shadow: 0 0 15px rgba(255, 51, 51, 0.4);
+    }
+
+    /* Listening State Specific */
+    .state-5.active {
+      background: #4a2200;
+      color: #ff6e00;
+      border-color: #ff6e00;
+      box-shadow: 0 0 20px rgba(255, 110, 0, 0.6);
+    }
+
+    .effect-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .btn-effect {
+      background: #1a1a1a;
+      color: #666;
+      border: 2px solid #333;
+      flex: 1;
+      padding: 10px 0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-effect.active {
+      background: #ff6e00;
+      color: #000;
+      border-color: #ff6e00;
+    }
+
+    .slider-container {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .slider-label {
+      font-size: 12px;
+      color: #888;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      background: #333;
+      border-radius: 4px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #ff6e00;
+      -webkit-appearance: none;
+      margin-top: -6px;
+      cursor: pointer;
+    }
+
+    .btn-blow {
+      background: #111;
+      color: #888;
+      border: 2px dashed #444;
+      width: 100%;
+      padding: 16px 0;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s;
+    }
+
+    .btn-blow:hover {
+      background: #1a1a1a;
+      color: #ccc;
+      border-color: #666;
+    }
+
+    .btn-blow:active {
+      transform: scale(0.95);
+      background: #222;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🕯️ Social Flow</h1>
+
+  <div class="control-panel">
+
+    <div class="card">
+      <h2>Strip</h2>
+      <div class="btn-grid" id="stripControls">
+        <button class="btn-state state-1" onclick="setStripState(1, this)">No Talking</button>
+        <button class="btn-state state-2 active" onclick="setStripState(2, this)">Talking Less</button>
+        <button class="btn-state state-3" onclick="setStripState(3, this)">Talking Normal</button>
+        <button class="btn-state state-4" onclick="setStripState(4, this)">Talking Too Much</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Ring</h2>
+      <div class="btn-grid" id="ringControls">
+        <button class="btn-state state-1" onclick="setRingState(1, this)">No Talking</button>
+        <button class="btn-state state-2 active" onclick="setRingState(2, this)">Talking Less</button>
+        <button class="btn-state state-3" onclick="setRingState(3, this)">Talking Normal</button>
+        <button class="btn-state state-4" onclick="setRingState(4, this)">Talking Too Much</button>
+        <button class="btn-state state-5" onclick="setRingState(5, this)">Listening (Spark)</button>
+      </div>
+
+      <div class="effect-group">
+        <button class="btn-effect" id="btnEffectStatic" onclick="setEffect(0, this)">Static Flow</button>
+        <button class="btn-effect active" id="btnEffectFlicker" onclick="setEffect(1, this)">Flicker Effect</button>
+      </div>
+
+      <div class="slider-container">
+        <div class="slider-label">
+          <span>Ring Brightness</span>
+          <span id="brightVal">150</span>
+        </div>
+        <input type="range" id="brightnessSlider" min="10" max="255" value="150">
+      </div>
+    </div>
+    <button class="btn-blow" onclick="blowOutCandle()">💨 Blow Out Candle</button>
+
+  </div>
+
+  <script>
+    function sendCommand(cmd) {
+      fetch("/cmd?val=" + cmd).catch(err => console.error("Error sending to Flask:", err));
+    }
+
+    function setStripState(stateValue, btn) {
+      document.querySelectorAll('#stripControls .btn-state').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      sendCommand("T" + stateValue);
+    }
+
+    function setRingState(stateValue, btn) {
+      document.querySelectorAll('#ringControls .btn-state').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      sendCommand("S" + stateValue);
+    }
+
+    function setEffect(effectValue, btn) {
+      document.getElementById('btnEffectStatic').classList.remove('active');
+      document.getElementById('btnEffectFlicker').classList.remove('active');
+      btn.classList.add('active');
+      sendCommand("E" + effectValue);
+    }
+
+    let lastWriteTime = 0;
+    document.getElementById('brightnessSlider').addEventListener("input", (e) => {
+      const val = parseInt(e.target.value);
+      document.getElementById('brightVal').innerText = val;
+
+      if (Date.now() - lastWriteTime > 50) {
+        lastWriteTime = Date.now();
+        sendCommand("B" + val);
+      }
+    });
+    function blowOutCandle() {
+      document.querySelectorAll('.btn-state').forEach(b => b.classList.remove('active'));
+      sendCommand("X");
+    }
+  </script>
+</body>
+
+</html>
