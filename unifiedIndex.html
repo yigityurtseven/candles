@@ -1,0 +1,640 @@
+<!doctype html>
+<html>
+<head>
+  <title>Merged Candle Control - Strips + Rings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background:#0b0b0b; color:#eee; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
+    h1 { text-align:center; padding:30px 0 10px; font-weight:600; color:#ff6e00; }
+    .container { margin:auto; padding:20px; max-width:1800px; }
+    .card { background:#181818; padding:20px; border-radius:14px; margin-bottom:16px; border:1px solid #222; }
+    .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px; }
+    @media (max-width: 1200px) { .grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width: 720px) { .grid { grid-template-columns:1fr; } .top-row { flex-direction:column; align-items:stretch !important; } }
+    .strip-title { font-size:15px; font-weight:600; margin-bottom:14px; color:#ffaa00; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .section-label { font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:#666; margin:12px 0 8px; }
+    .row { display:flex; align-items:center; gap:12px; }
+    .row label { font-size:13px; color:#888; width:80px; }
+    .row input[type="range"] { flex:1; accent-color:#ff6e00; }
+    .row .val { font-size:13px; width:34px; text-align:right; }
+    .t-slider-container { margin-bottom:12px; }
+    .t-slider { width:100%; -webkit-appearance:none; height:10px; border-radius:5px; background:linear-gradient(to right,#333 0%,#333 24.5%,#ff6e00 24.5%,#ff6e00 25.5%,#333 25.5%,#333 49.5%,#ff6e00 49.5%,#ff6e00 50.5%,#333 50.5%,#333 74.5%,#ff6e00 74.5%,#ff6e00 75.5%,#333 75.5%,#333 100%); outline:none; }
+    .t-slider::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:#fff; border:2px solid #ff6e00; cursor:pointer; box-shadow:0 0 5px rgba(0,0,0,.5); }
+    .tick-labels { display:flex; justify-content:space-between; font-size:9px; color:#888; margin-top:6px; text-transform:uppercase; }
+    .tick-labels span { flex:1; text-align:center; }
+    .modes { display:flex; gap:8px; flex-wrap:wrap; }
+    .modes button, .btn-state, .btn-effect { padding:8px 12px; border-radius:8px; border:1px solid #333; background:#222; color:#888; font-size:12px; cursor:pointer; transition:.1s; }
+    .modes button.active, .btn-effect.active { background:#ff6e00; color:#000; border-color:#ff6e00; font-weight:600; }
+    .swatch { width:32px; height:32px; border-radius:50%; border:2px solid transparent; cursor:pointer; }
+    .swatch.active { border-color:#fff; box-shadow:0 0 10px #ff6e00; }
+    .sw-1 { background:#ff820f; } .sw-2 { background:linear-gradient(135deg,#ff820f,#ff640a); }
+    .sw-3 { background:linear-gradient(135deg,#ff640a,#ff5005); } .sw-4 { background:linear-gradient(135deg,#ff5005,#ff3c00); }
+    .sw-5 { background:linear-gradient(135deg,#ff3c00,#ff2800); } .sw-6 { background:linear-gradient(135deg,#ff2800,#ff1900); }
+    .sw-7 { background:linear-gradient(135deg,#ff1900,#ff0f00); }
+    .color-picker { -webkit-appearance:none; border:none; width:34px; height:34px; border-radius:6px; cursor:pointer; padding:0; background:none; }
+    .color-picker::-webkit-color-swatch-wrapper { padding:0; } .color-picker::-webkit-color-swatch { border:1px solid #444; border-radius:6px; }
+    .btn-apply { padding:8px 16px; border-radius:6px; border:1px solid #ff6e00; background:transparent; color:#ff6e00; cursor:pointer; font-size:12px; font-weight:600; }
+    .btn-apply:hover, .btn-apply.active { background:#ff6e00; color:#000; }
+    .btn-tap { background:#ff3333 !important; color:white !important; border-color:#ff3333 !important; font-weight:bold; padding:6px 10px; border-radius:6px; cursor:pointer; }
+    .btn-tap:active, button:active { transform:scale(.96); }
+    .pin-note { font-size:10px; color:#777; font-weight:400; }
+    .mini { font-size:10px !important; padding:6px 8px !important; }
+    .flow-box { border:1px solid #2b2b2b; border-radius:12px; padding:12px; background:#141414; margin-top:12px; }
+    .btn-blow { background:#111 !important; color:#aaa !important; border:2px dashed #444 !important; width:100%; padding:11px 0 !important; margin-top:10px; border-radius:10px; font-weight:700; }
+    .pending-box { display:none; margin-top:10px; padding:10px; border-radius:10px; background:#251707; border:1px solid #ff6e00; color:#ffb066; font-size:12px; }
+    .pending-box.active { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .btn-cancel { padding:7px 10px; border-radius:8px; border:1px solid #ff4444; background:#351010; color:#ff8888; cursor:pointer; font-weight:700; }
+    .state-1.active { background:#444000 !important; color:#ffea00 !important; border-color:#ffea00 !important; }
+    .state-2.active { background:#4a2f00 !important; color:#ff9900 !important; border-color:#ff9900 !important; }
+    .state-3.active { background:#4a1f00 !important; color:#ff5500 !important; border-color:#ff5500 !important; }
+    .state-4.active { background:#440000 !important; color:#ff3333 !important; border-color:#ff3333 !important; }
+    .state-5.active { background:#4a2200 !important; color:#ff6e00 !important; border-color:#ff6e00 !important; }
+    input[type=number] { background:#222; color:#eee; border:1px solid #333; border-radius:4px; padding:4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🕯️ Merged Candle Control</h1>
+
+    <div class="card master-card">
+      <div class="top-row" style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px;">
+        <div>
+          <div class="section-label">Dynamics Timing Config (Seconds)</div>
+          <div style="display:flex; flex-direction:row; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; flex-direction:column; gap:4px;"><label style="font-size:11px;color:#888;">State Up</label><input type="number" id="timeUp" value="30" style="width:60px;"></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><label style="font-size:11px;color:#888;">Cooldown</label><input type="number" id="timeCool" value="10" style="width:60px;"></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><label style="font-size:11px;color:#888;">State Down</label><input type="number" id="timeDown" value="30" style="width:60px;"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Atmosphere</div>
+          <div class="modes" id="global-states" style="margin-bottom:15px;">
+            <button onclick="setGlobalState(1,this)">Ember (Quiet)</button>
+            <button onclick="setGlobalState(2,this)">Glow (Social Flow)</button>
+            <button onclick="setGlobalState(3,this)">Spark (Excitement)</button>
+            <button onclick="setGlobalState(4,this)">Turbulent (Tension)</button>
+            <button onclick="setGlobalState(5,this)">Extinguished</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Simulate Group Taps (Sync)</div>
+          <div class="modes" style="margin-bottom:15px; display:flex; gap:8px;">
+            <button onclick="sendGroupTap('1100')" class="btn-apply">2 People (Candles 1 & 2)</button>
+            <button onclick="sendGroupTap('1010')" class="btn-apply">2 People (Candles 1 & 3)</button>
+            <button onclick="sendGroupTap('1110')" class="btn-apply">3 People (Candles 1, 2, 3)</button>
+            <button onclick="sendGroupTap('1111')" class="btn-apply">4 People (All Candles)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="strip-title" style="color:#ff6e00; margin-top:8px;">Global Table State</div>
+      <div class="row">
+        <label>Master Brg</label>
+        <input type="range" min="0" max="255" value="200" id="master-range" oninput="onMaster(this)" />
+        <span class="val" id="master-val">200</span>
+      </div>
+    </div>
+
+    <div id="strips-grid"></div>
+  </div>
+
+  <script>
+    let tapSequenceActive = false;
+    const activeTimers = {1:null,2:null,3:null,4:null};
+    const uiIntervals = {1:null,2:null,3:null,4:null};
+    const pendingTransitions = {1:null,2:null,3:null,4:null};
+    const PENDING_TRANSITION_MS = 5000;
+    const stripPins = {1:5, 2:6, 3:7, 4:8};
+    const ringPins = {1:9, 2:10, 3:11, 4:12};
+
+    function sendCmd(cmd) { fetch('/cmd?val=' + encodeURIComponent(cmd)); }
+
+    let bTimeouts = {};
+    let lastBSend = {};
+    function sendThrottledB(strip, val) {
+      let now = Date.now();
+      if (!lastBSend[strip] || now - lastBSend[strip] > 50) {
+        sendCmd(`b${strip}${val}`);
+        lastBSend[strip] = now;
+      } else {
+        clearTimeout(bTimeouts[strip]);
+        bTimeouts[strip] = setTimeout(() => {
+          sendCmd(`b${strip}${val}`);
+          lastBSend[strip] = Date.now();
+        }, 50);
+      }
+    }
+
+    let rbTimeouts = {};
+    let lastRBSend = {};
+    function sendThrottledRingBrightness(candle, val) {
+      let now = Date.now();
+      if (!lastRBSend[candle] || now - lastRBSend[candle] > 50) {
+        sendCmd(`q${candle}${val}`);
+        lastRBSend[candle] = now;
+      } else {
+        clearTimeout(rbTimeouts[candle]);
+        rbTimeouts[candle] = setTimeout(() => {
+          sendCmd(`q${candle}${val}`);
+          lastRBSend[candle] = Date.now();
+        }, 50);
+      }
+    }
+
+    function clearAutomation(strip) {
+      clearInterval(activeTimers[strip]);
+      clearTimeout(activeTimers[strip]);
+      clearInterval(uiIntervals[strip]);
+      let display = document.getElementById(`timerDisplay${strip}`);
+      if (display) display.innerText = '';
+    }
+
+    function updatePendingBox(strip, text = '') {
+      const box = document.getElementById(`pendingBox${strip}`);
+      const label = document.getElementById(`pendingText${strip}`);
+      if (!box || !label) return;
+      label.innerText = text;
+      box.classList.toggle('active', !!text);
+    }
+
+    function cancelPendingTransition(strip) {
+      const pending = pendingTransitions[strip];
+      if (!pending) return;
+      clearTimeout(pending.timeoutId);
+      clearInterval(pending.intervalId);
+      pendingTransitions[strip] = null;
+      updatePendingBox(strip);
+      sendCmd(`r${strip}0`);
+      syncRingButtons(strip, 0);
+    }
+
+    function getCurrentTalkingState(strip) {
+      const active = document.querySelector(`#tState${strip} button.active`);
+      if (active) return Array.from(active.parentNode.children).indexOf(active) + 1;
+      return parseInt(document.getElementById(`tSlider${strip}`)?.dataset.state || '0');
+    }
+
+    function talkingStateToSliderValue(state) {
+      return state === 1 ? 32 : state === 2 ? 96 : state === 3 ? 160 : 224;
+    }
+
+    function startPendingTalkingTransition(strip, targetState, btn) {
+      cancelPendingTransition(strip);
+      clearAutomation(strip);
+      sendCmd(`r${strip}${targetState}`);
+      syncRingButtons(strip, targetState);
+
+      let remaining = PENDING_TRANSITION_MS / 1000;
+      const targetLabel = targetState === 1 ? 'No Talking' : 'Talking Too Much';
+      updatePendingBox(strip, `${targetLabel} in ${remaining}s — ring preview active`);
+
+      const intervalId = setInterval(() => {
+        remaining -= 1;
+        if (remaining > 0) updatePendingBox(strip, `${targetLabel} in ${remaining}s — ring preview active`);
+      }, 1000);
+
+      const timeoutId = setTimeout(() => {
+        clearInterval(intervalId);
+        pendingTransitions[strip] = null;
+        updatePendingBox(strip);
+        applyTalkingStateNow(strip, targetState, btn, false);
+      }, PENDING_TRANSITION_MS);
+
+      pendingTransitions[strip] = { timeoutId, intervalId, targetState };
+    }
+
+    function getStripState(strip) {
+      let b = document.getElementById(`b${strip}`).value;
+      let sActive = document.querySelector(`#s${strip} button.active`);
+      if (sActive) return {b, type:'s', val:Array.from(sActive.parentNode.children).indexOf(sActive)+1, el:sActive};
+      let tActive = document.querySelector(`#tState${strip} button.active`);
+      if (tActive) return {b, type:'y', val:Array.from(tActive.parentNode.children).indexOf(tActive)+1, el:tActive};
+      let cActive = document.querySelector(`#c${strip} .active`);
+      if (cActive) return {b, type:'c', val:Array.from(cActive.parentNode.children).indexOf(cActive), el:cActive};
+      return {b, type:null};
+    }
+
+    function restoreStripState(strip, state) {
+      if (!state || !state.type) return;
+      document.getElementById(`b${strip}`).value = state.b;
+      document.getElementById(`b${strip}-val`).textContent = state.b;
+      sendThrottledB(strip, state.b);
+      if (state.type === 's') setState(strip, state.val, state.el);
+      else if (state.type === 'y') {
+        const slider = document.getElementById(`tSlider${strip}`);
+        slider.value = talkingStateToSliderValue(state.val);
+        slider.dataset.state = state.val;
+        setTalkingState(strip, state.val, state.el, true);
+      }
+      else if (state.type === 'c') setColor(strip, state.val, state.el);
+    }
+
+    function onMaster(el) {
+      document.getElementById('master-val').textContent = el.value;
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`b${i}`).value = el.value;
+        document.getElementById(`b${i}-val`).textContent = el.value;
+        sendThrottledB(i, el.value);
+      }
+    }
+
+    function onB(strip, el) {
+      let val = parseInt(el.value);
+      document.getElementById(`b${strip}-val`).textContent = val;
+      // Brightness is now independent from the talking state slider.
+      // This only changes strip brightness; it does not change No/Less/Normal/Much.
+      sendThrottledB(strip, val);
+    }
+
+    function onTalkingSlider(strip, el) {
+      let val = parseInt(el.value);
+      // Talking slider is now only a state/progress controller.
+      // It does not touch the strip brightness slider anymore.
+      let state = val >= 192 ? 4 : val >= 128 ? 3 : val >= 64 ? 2 : 1;
+      if (el.dataset.state != state) {
+        el.dataset.state = state;
+        setTalkingState(strip, state, null, true);
+      }
+    }
+
+    function setSliderAutomated(strip, val) {
+      let slider = document.getElementById(`tSlider${strip}`);
+      val = Math.max(0, Math.min(255, val));
+      slider.value = val;
+      onTalkingSlider(strip, slider);
+    }
+
+    function startTalking(strip) {
+      clearAutomation(strip);
+      let secsPerState = parseFloat(document.getElementById('timeUp').value) || 30;
+      let msPerStep = (secsPerState * 1000) / 64;
+      let startTime = Date.now();
+      activeTimers[strip] = setInterval(() => {
+        let slider = document.getElementById(`tSlider${strip}`);
+        let currentVal = parseInt(slider.value);
+        if (currentVal < 255) setSliderAutomated(strip, currentVal + 1);
+        else { clearAutomation(strip); document.getElementById(`timerDisplay${strip}`).innerText = 'MAX'; }
+      }, msPerStep);
+      uiIntervals[strip] = setInterval(() => {
+        let elapsed = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById(`timerDisplay${strip}`).innerText = `🗣️ ${elapsed}s`;
+      }, 1000);
+    }
+
+    function stopTalking(strip) {
+      clearAutomation(strip);
+      let cooldownSecs = parseFloat(document.getElementById('timeCool').value) || 10;
+      let secsPerStateDown = parseFloat(document.getElementById('timeDown').value) || 30;
+      let msPerStep = (secsPerStateDown * 1000) / 64;
+      let startTime = Date.now();
+      uiIntervals[strip] = setInterval(() => {
+        let left = Math.ceil((cooldownSecs * 1000 - (Date.now() - startTime)) / 1000);
+        if (left > 0) document.getElementById(`timerDisplay${strip}`).innerText = `⏳ ${left}s`;
+      }, 1000);
+      activeTimers[strip] = setTimeout(() => {
+        clearInterval(uiIntervals[strip]);
+        document.getElementById(`timerDisplay${strip}`).innerText = '📉 Fading...';
+        activeTimers[strip] = setInterval(() => {
+          let slider = document.getElementById(`tSlider${strip}`);
+          let currentVal = parseInt(slider.value);
+          if (currentVal > 0) setSliderAutomated(strip, currentVal - 1);
+          else { clearAutomation(strip); document.getElementById(`timerDisplay${strip}`).innerText = 'MIN'; }
+        }, msPerStep);
+      }, cooldownSecs * 1000);
+    }
+
+    function stayHere(strip) {
+      clearAutomation(strip);
+      document.getElementById(`timerDisplay${strip}`).innerText = '⏸️ Paused';
+    }
+
+    function clearModeGroups(candle) {
+      document.getElementById(`s${candle}`).querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      document.getElementById(`c${candle}`).querySelectorAll('.swatch,button').forEach(s => s.classList.remove('active'));
+      document.getElementById(`tState${candle}`).querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      document.getElementById(`cgBtn${candle}`)?.classList.remove('active');
+    }
+
+    function syncFlowButtons(candle, state) {
+      document.getElementById(`flowState${candle}`).querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      let btn = document.querySelector(`#flowState${candle} .state-${state}`);
+      if (btn) btn.classList.add('active');
+    }
+
+    function syncRingButtons(candle, state) {
+      document.getElementById(`ringState${candle}`).querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      let btn = document.querySelector(`#ringState${candle} .state-${state}`);
+      if (btn) btn.classList.add('active');
+    }
+
+    function applyTalkingStateNow(strip, val, btn, fromSlider = false) {
+      sendCmd(`y${strip}${val}`);
+      if (!fromSlider) {
+        let slider = document.getElementById(`tSlider${strip}`);
+        slider.value = talkingStateToSliderValue(val);
+        slider.dataset.state = val;
+      }
+      clearModeGroups(strip);
+      if (btn) btn.classList.add('active');
+      else {
+        let btns = document.getElementById(`tState${strip}`).querySelectorAll('button');
+        if (btns[val - 1]) btns[val - 1].classList.add('active');
+      }
+      syncFlowButtons(strip, val);
+
+      // Ring is off during the middle talking states. It only remains active
+      // for No Talking and Talking Too Much.
+      syncRingButtons(strip, (val === 1 || val === 4) ? val : 0);
+    }
+
+    function setTalkingState(strip, val, btn, fromSlider = false) {
+      const currentState = getCurrentTalkingState(strip);
+
+      // Only these two transitions get the 5 second ring-preview confirmation.
+      if (!fromSlider && currentState === 2 && val === 1) {
+        startPendingTalkingTransition(strip, val, btn);
+        return;
+      }
+      if (!fromSlider && currentState === 3 && val === 4) {
+        startPendingTalkingTransition(strip, val, btn);
+        return;
+      }
+
+      cancelPendingTransition(strip);
+      applyTalkingStateNow(strip, val, btn, fromSlider);
+    }
+
+    function setColor(strip, val, btn) {
+      sendCmd(`c${strip}${val}`);
+      clearModeGroups(strip);
+      if (btn) btn.classList.add('active');
+    }
+
+    function setCustomGradient(strip) {
+      let hexA = document.getElementById(`cgA${strip}`).value.substring(1);
+      let hexB = document.getElementById(`cgB${strip}`).value.substring(1);
+      sendCmd(`k${strip}${hexA}${hexB}`);
+      clearModeGroups(strip);
+      document.getElementById(`cgBtn${strip}`).classList.add('active');
+    }
+
+    function setEffect(strip, val, btn) {
+      sendCmd(`e${strip}${val}`);
+      document.getElementById(`e${strip}`).querySelectorAll('button').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function setState(strip, stateVal, btn) {
+      cancelPendingTransition(strip);
+      sendCmd(`x${strip}${stateVal}`);
+      clearModeGroups(strip);
+      if (btn) btn.classList.add('active');
+      syncRingButtons(strip, (stateVal === 1 || stateVal === 4) ? stateVal : 0);
+    }
+
+    function setGlobalState(stateVal, btn) {
+      sendCmd(`g${stateVal}`);
+      document.getElementById('global-states').querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      for (let i = 1; i <= 4; i++) {
+        clearModeGroups(i);
+        document.getElementById(`s${i}`).children[stateVal - 1].classList.add('active');
+        syncRingButtons(i, (stateVal === 1 || stateVal === 4) ? stateVal : 0);
+        syncFlowButtons(i, stateVal <= 4 ? stateVal : 0);
+      }
+    }
+
+    function sendTap(strip) {
+      let durationSec = parseInt(document.getElementById(`tapDuration${strip}`).value) || 3;
+      let durationMs = durationSec * 1000;
+      sendCmd(`t${strip}${durationSec}`);
+      setTimeout(() => setTalkingState(strip, 3), durationMs);
+    }
+
+    function sendTap2(strip) {
+      if (tapSequenceActive) return;
+      tapSequenceActive = true;
+      let durationSec = parseInt(document.getElementById(`tapDuration${strip}`).value) || 3;
+      let durationMs = durationSec * 1000;
+      let savedStates = {};
+      for (let i = 1; i <= 4; i++) {
+        clearAutomation(i);
+        if (i !== strip) {
+          savedStates[i] = getStripState(i);
+          setTalkingState(i, 1);
+          sendThrottledB(i, 25);
+        }
+      }
+      setState(strip, 3);
+      sendCmd(`t${strip}${durationSec}`);
+      setTimeout(() => {
+        for (let i = 1; i <= 4; i++) if (i !== strip && savedStates[i]) restoreStripState(i, savedStates[i]);
+        setTalkingState(strip, 3);
+        tapSequenceActive = false;
+      }, durationMs);
+    }
+
+    function sendTap3(strip) {
+      if (tapSequenceActive) return;
+      tapSequenceActive = true;
+      let durationSec = parseInt(document.getElementById(`tapDuration${strip}`).value) || 3;
+      let durationMs = durationSec * 1000;
+      let savedStates = {};
+      for (let i = 1; i <= 4; i++) {
+        clearAutomation(i);
+        if (i !== strip) {
+          savedStates[i] = getStripState(i);
+          setTalkingState(i, 1);
+          sendThrottledB(i, 25);
+        }
+      }
+      let blinkState = false;
+      let blinker = setInterval(() => {
+        blinkState = !blinkState;
+        sendThrottledB(strip, blinkState ? 255 : 0);
+        sendThrottledRingBrightness(strip, blinkState ? 255 : 0);
+      }, 250);
+      sendCmd(`t${strip}${durationSec}`);
+      setTimeout(() => {
+        clearInterval(blinker);
+        for (let i = 1; i <= 4; i++) if (i !== strip && savedStates[i]) restoreStripState(i, savedStates[i]);
+        setTalkingState(strip, 3);
+        sendThrottledRingBrightness(strip, document.getElementById(`ringBrightness${strip}`).value);
+        tapSequenceActive = false;
+      }, durationMs);
+    }
+
+    function shareFlame(from, to) {
+      // Arduino now plays a two-pulse feedback first, then applies the copied flame.
+      // The UI mirrors that timing so the receiver does not visually change early.
+      sendCmd(`s${from}${to}`);
+      let stateToCopy = getStripState(from);
+      let ringB = document.getElementById(`ringBrightness${from}`).value;
+      setTimeout(() => {
+        if (stateToCopy) restoreStripState(to, stateToCopy);
+        document.getElementById(`ringBrightness${to}`).value = ringB;
+        document.getElementById(`ringBrightness${to}-val`).textContent = ringB;
+      }, 1300);
+    }
+
+    function sendGroupTap(mask) { sendCmd(`z${mask}`); }
+
+    function setCandleFlowState(candle, state, btn) {
+      syncFlowButtons(candle, state);
+      syncRingButtons(candle, (state === 1 || state === 4 || state === 5) ? state : 0);
+      if (state >= 1 && state <= 4) setTalkingState(candle, state, null);
+      else if (state === 5) {
+        sendCmd(`y${candle}5`);
+        clearModeGroups(candle);
+      }
+    }
+
+    function setRingState(candle, state, btn) {
+      cancelPendingTransition(candle);
+      sendCmd(`r${candle}${state}`);
+      syncRingButtons(candle, state);
+    }
+
+    function setRingEffect(candle, effectValue, btn) {
+      document.getElementById(`ringEffect${candle}`).querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      sendCmd(`w${candle}${effectValue}`);
+    }
+
+    function onRingBrightness(candle, el) {
+      document.getElementById(`ringBrightness${candle}-val`).textContent = el.value;
+      sendThrottledRingBrightness(candle, el.value);
+    }
+
+    function blowOutCandle(candle) {
+      document.querySelectorAll(`#flowState${candle} button, #ringState${candle} button, #s${candle} button, #tState${candle} button, #c${candle} .swatch`).forEach(b => b.classList.remove('active'));
+      sendCmd(`o${candle}`);
+    }
+
+    const grid = document.getElementById('strips-grid');
+    let html = '<div class="grid">';
+    for (let i = 1; i <= 4; i++) {
+      html += `
+        <div class="card">
+          <div class="strip-title">
+            <div>Candle ${i}<div class="pin-note">Strip pin ${stripPins[i]} + Ring pin ${ringPins[i]}</div></div>
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+              <button class="btn-tap" onclick="sendTap(${i})">Tap 1</button>
+              <button class="btn-tap" style="background:#ff8800 !important; border-color:#ff8800 !important;" onclick="sendTap2(${i})">Tap 2</button>
+              <button class="btn-tap" style="background:#d900ff !important; border-color:#d900ff !important;" onclick="sendTap3(${i})">Tap 3</button>
+              <input type="number" id="tapDuration${i}" value="3" min="1" max="30" style="width:42px; font-size:11px;" title="Duration (sec)">
+              <span style="font-size:10px; color:#888;">sec</span>
+            </div>
+          </div>
+
+          <div class="section-label">Strip Brightness (Independent)</div>
+          <div class="row">
+            <input type="range" min="0" max="255" value="200" id="b${i}" oninput="onB(${i},this)">
+            <span class="val" id="b${i}-val">200</span>
+          </div>
+
+          <div class="section-label">Social State</div>
+          <div class="modes" id="s${i}">
+            <button onclick="setState(${i},1,this)">Ember</button>
+            <button onclick="setState(${i},2,this)">Glow</button>
+            <button onclick="setState(${i},3,this)">Spark</button>
+            <button onclick="setState(${i},4,this)">Turbulent</button>
+            <button onclick="setState(${i},5,this)">Exting</button>
+          </div>
+
+          <div class="section-label">Talking State Slider (Independent)</div>
+          <div class="t-slider-container">
+            <input type="range" min="0" max="255" value="32" class="t-slider" id="tSlider${i}" oninput="onTalkingSlider(${i},this)" data-state="1">
+            <div class="tick-labels"><span>None</span><span>Less</span><span>Norm</span><span>Much</span></div>
+          </div>
+
+          <div class="section-label">Talking Dynamics (Auto)</div>
+          <div class="modes" style="margin-bottom:15px; display:flex; align-items:center; gap:6px;">
+            <button onclick="startTalking(${i})" style="border-color:#4CAF50; color:#4CAF50;">🗣️ Talking</button>
+            <button onclick="stopTalking(${i})" style="border-color:#FF9800; color:#FF9800;">🛑 Stopped</button>
+            <button onclick="stayHere(${i})" style="border-color:#2196F3; color:#2196F3;">⏸️ Stay</button>
+            <span id="timerDisplay${i}" style="font-size:11px; color:#ff6e00; font-weight:bold; min-width:50px; text-align:right;"></span>
+          </div>
+
+          <div class="modes" id="tState${i}">
+            <button onclick="setTalkingState(${i},1,this)">No Talking</button>
+            <button onclick="setTalkingState(${i},2,this)">Talking Less</button>
+            <button onclick="setTalkingState(${i},3,this)">Talking Normal</button>
+            <button onclick="setTalkingState(${i},4,this)">Talking Too Much</button>
+          </div>
+          <div class="pending-box" id="pendingBox${i}">
+            <span id="pendingText${i}"></span>
+            <button class="btn-cancel" onclick="cancelPendingTransition(${i})">Cancel</button>
+          </div>
+
+          <div class="section-label">Manual Presets</div>
+          <div class="modes" id="c${i}">
+            <div class="swatch sw-1 active" onclick="setColor(${i},0,this)"></div>
+            <div class="swatch sw-2" onclick="setColor(${i},1,this)"></div>
+            <div class="swatch sw-3" onclick="setColor(${i},2,this)"></div>
+            <div class="swatch sw-4" onclick="setColor(${i},3,this)"></div>
+            <div class="swatch sw-5" onclick="setColor(${i},4,this)"></div>
+            <div class="swatch sw-6" onclick="setColor(${i},5,this)"></div>
+            <div class="swatch sw-7" onclick="setColor(${i},6,this)"></div>
+          </div>
+
+          <div class="section-label">Custom Gradient</div>
+          <div class="modes" style="align-items:center;">
+            <input type="color" class="color-picker" id="cgA${i}" value="#ff5000">
+            <input type="color" class="color-picker" id="cgB${i}" value="#c80000">
+            <button id="cgBtn${i}" onclick="setCustomGradient(${i})">Apply Gradient</button>
+          </div>
+
+          <div class="section-label">Strip Effect</div>
+          <div class="modes" id="e${i}">
+            <button onclick="setEffect(${i},0,this)">Static</button>
+            <button class="active" onclick="setEffect(${i},1,this)">Flicker</button>
+          </div>
+
+          <div class="flow-box">
+            <div class="section-label" style="margin-top:0;">Paired Candle Flow (Strip + Ring)</div>
+            <div class="modes" id="flowState${i}">
+              <button class="state-1" onclick="setCandleFlowState(${i},1,this)">No Talking</button>
+              <button class="state-2" onclick="setCandleFlowState(${i},2,this)">Talking Less</button>
+              <button class="state-3" onclick="setCandleFlowState(${i},3,this)">Talking Normal</button>
+              <button class="state-4" onclick="setCandleFlowState(${i},4,this)">Talking Too Much</button>
+              <button class="state-5" onclick="setCandleFlowState(${i},5,this)">Listening</button>
+            </div>
+
+            <div class="section-label">Ring Only State</div>
+            <div class="modes" id="ringState${i}">
+              <button class="state-1" onclick="setRingState(${i},1,this)">No Talking</button>
+              <button class="state-2" onclick="setRingState(${i},2,this)">Talking Less</button>
+              <button class="state-3" onclick="setRingState(${i},3,this)">Talking Normal</button>
+              <button class="state-4" onclick="setRingState(${i},4,this)">Talking Too Much</button>
+              <button class="state-5" onclick="setRingState(${i},5,this)">Listening Spark</button>
+            </div>
+
+            <div class="section-label">Ring Effect</div>
+            <div class="modes" id="ringEffect${i}">
+              <button onclick="setRingEffect(${i},0,this)">Static Flow</button>
+              <button class="active" onclick="setRingEffect(${i},1,this)">Flicker Effect</button>
+            </div>
+
+            <div class="section-label">Ring Brightness</div>
+            <div class="row">
+              <input type="range" id="ringBrightness${i}" min="0" max="255" value="150" oninput="onRingBrightness(${i},this)">
+              <span class="val" id="ringBrightness${i}-val">150</span>
+            </div>
+
+            <button class="btn-blow" onclick="blowOutCandle(${i})">💨 Blow Out Candle ${i}</button>
+          </div>
+
+          <div class="section-label">Share</div>
+          <div class="modes">
+            ${[1,2,3,4].filter(n => n !== i).map(n => `<button class="mini" onclick="shareFlame(${i},${n})">Copy to ${n}</button>`).join('')}
+          </div>
+        </div>`;
+    }
+    grid.innerHTML = html + '</div>';
+  </script>
+</body>
+</html>
